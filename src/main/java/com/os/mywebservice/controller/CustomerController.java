@@ -11,51 +11,43 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/customers")
 public class CustomerController {
 
     @Autowired
     private CustomerDao customerDao;
 
-    @GetMapping("/list")
-    public String getAll(Model model){
-        List<Customer> customers = customerDao.findAll();
-        for(Customer customer:customers){
-            System.out.println(customer.toString());
+    @GetMapping("/")
+    public List<Customer> getAll(){
+        return customerDao.findAll();
+    }
+
+    @GetMapping("/{customerId}")
+    public Customer getById(@PathVariable int customerId){
+        Optional<Customer> optionalCustomer = customerDao.findById(customerId);
+        //check if customer isn't found
+        Customer customer = null;
+        if(optionalCustomer.isPresent()){
+            customer = optionalCustomer.get();
         }
-        model.addAttribute("listCustomers",customers);
-        return "listPage";
+        return customer;
     }
 
-    @GetMapping("/add")
-    public String getAddView(Model theModel){
-        Customer customer = new Customer();
-        theModel.addAttribute("customer",customer);
-        return "add-form";
+    @PostMapping("/add")
+    public Customer save(@RequestBody Customer customer){
+        customer.setId(0);
+        return customerDao.save(customer);
     }
 
-    @GetMapping("/update/{id}")
-    public ModelAndView getUpdView(@PathVariable(name="id") int customerId){
-        ModelAndView modelAndView = new ModelAndView("upd-form");
-        Optional<Customer> customerO=customerDao.findById(customerId);
-        if(customerO.isPresent()) {
-            Customer customer = customerO.get();
-            modelAndView.addObject("customerU",customer);
-        }
-        return modelAndView;
+    @PutMapping("/update")
+    public Customer update(@RequestBody Customer customer){
+        return customerDao.save(customer);
     }
 
-    @PostMapping("/save")
-    public String save(@ModelAttribute("customer") Customer theCustomer){
-        customerDao.save(theCustomer);
-        return "redirect:/customers/list";
-    }
-
-    @GetMapping("/delete/{id}")
-    public String delete(@PathVariable(name="id") int customerId){
+    @DeleteMapping("/delete/{customerId}")
+    public String delete(@PathVariable int customerId){
         customerDao.deleteById(customerId);
-        return "redirect:/customers/list";
+        return "customer deleted - "+customerId;
     }
-
 }
