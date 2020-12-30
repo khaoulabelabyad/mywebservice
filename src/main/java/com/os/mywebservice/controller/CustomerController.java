@@ -11,13 +11,15 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/customers")
+//@CrossOrigin(maxAge = 3600)
+//@RestController
+//@RequestMapping("/customers")
 public class CustomerController {
 
     @Autowired
     private CustomerDao customerDao;
 
+    @CrossOrigin(allowedHeaders = {"http://localhost:4200/list"})
     @GetMapping("/")
     public List<Customer> getAll(){
         return customerDao.findAll();
